@@ -48,6 +48,88 @@
     max-width: 1500px;
     margin: 0 auto;
   }
+  /* === Tabs === */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  .tab-btn {
+    background: none;
+    border: none;
+    padding: 10px 18px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -1px;
+    font-family: inherit;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .tab-btn:hover { color: #1f2937; }
+  .tab-btn.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+  }
+  .tab-btn:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* === Article === */
+  .article {
+    max-width: 760px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    padding: 32px 40px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    font-size: 16px;
+    line-height: 1.7;
+    color: #1f2937;
+  }
+  .article h2 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    line-height: 1.25;
+    color: #111827;
+  }
+  .article h3 {
+    font-size: 19px;
+    font-weight: 700;
+    margin: 32px 0 10px 0;
+    color: #111827;
+  }
+  .article p { margin: 0 0 16px 0; }
+  .article a { color: #2563eb; text-decoration: none; }
+  .article a:hover { text-decoration: underline; }
+  .article .skip-link {
+    display: inline-block;
+    font-size: 14px;
+    color: #2563eb;
+    font-weight: 500;
+  }
+  .article .skip-link.bottom {
+    margin: 24px 0 0 0;
+    display: block;
+    text-align: center;
+    padding: 14px;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    font-weight: 600;
+  }
+  .article .skip-link.bottom:hover {
+    background: #dbeafe;
+    text-decoration: none;
+  }
+
   @media (max-width: 1000px) {
     /* Stack the layout, then reorder for mobile-first reading:
        Title → Subtitle → Results (verdict+chart first) → Inputs → How-it-works → Disclaimer */
@@ -70,6 +152,22 @@
     .intro { order: 30; }
     .assumptions { order: 35; }
     .footer { order: 40; }
+    /* Tabs sit between subtitle and content on mobile */
+    .tabs { order: 3; margin-bottom: 12px; }
+    /* When calculator tab is active, let its children flow into body's flex order */
+    #calculator-tab.active { display: contents; }
+    /* Logic tab gets ordered like the other content panes */
+    #logic-tab { order: 10; }
+    /* Tighter article padding on small screens */
+    .article {
+      padding: 22px 18px;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+    .article h2 { font-size: 22px; }
+    .article h3 { font-size: 17px; margin-top: 24px; }
+    /* Equal-width tab buttons on mobile so they fill the bar */
+    .tab-btn { flex: 1; padding: 12px 8px; }
     /* Inside the results section, surface verdict + chart at the top */
     .verdict { order: 1; }
     .chart-wrap { order: 2; }
@@ -358,6 +456,12 @@
     color: #374151;
   }
   .reset-btn:hover { background: #e5e7eb; }
+  .live-rate {
+    color: #047857 !important;
+    font-size: 11px;
+    margin-top: 4px;
+    font-weight: 500;
+  }
   .intro {
     background: #eff6ff;
     border: 1px solid #bfdbfe;
@@ -430,6 +534,13 @@
 <h1>Rent vs. Own Calculator</h1>
 <p class="subtitle">Should you rent or buy? It depends on a lot of assumptions. This tool lets you see exactly how each one moves the needle.</p>
 
+<nav class="tabs" role="tablist" aria-label="Sections">
+  <button class="tab-btn active" data-tab="calculator" role="tab" aria-selected="true">Calculator</button>
+  <button class="tab-btn" data-tab="logic" role="tab" aria-selected="false">The Logic</button>
+</nav>
+
+<div id="calculator-tab" class="tab-panel active" role="tabpanel">
+
 <div class="intro">
   <h3>How this works</h3>
   <p>Both the buyer and the renter start with the same cash. The buyer puts the down payment into a home; the renter invests it at the investment return rate. Each month, both pay their housing costs &mdash; and whichever side pays less invests the difference. At the end of your time horizon, we compare net worth: home equity plus any side investments for the buyer, versus the renter's portfolio.</p>
@@ -486,6 +597,7 @@
         </div>
       </div>
       <input type="range" id="mortgageRate" min="0" max="12" step="0.1" value="7">
+      <div class="input-hint live-rate" id="mortgageRate_live" style="display:none;"></div>
     </div>
 
     <div class="input-group">
@@ -1072,11 +1184,139 @@ render();
   <strong>Assumptions used by this calculator:</strong> Both scenarios assume the same monthly housing budget &mdash; whichever party pays less each month invests the difference at the investment return rate. Property tax and maintenance scale with home value. Insurance and HOA grow with inflation. Rent grows at the rent growth rate. Mortgage is a fixed-rate fully amortizing loan. <strong>PMI</strong> applies only when the initial down payment is below 20%, is charged monthly as the annual PMI rate &times; current loan balance &divide; 12, and automatically drops off the month the loan balance reaches 80% of the original home price. The buyer's net worth at any year = home value &minus; loan balance + investment account. Selling costs, closing costs, and tax deductions are not modeled.
 </div>
 
+</div><!-- /#calculator-tab -->
+
+<div id="logic-tab" class="tab-panel" role="tabpanel">
+  <article class="article">
+    <h2>What Actually Decides Rent vs. Own</h2>
+    <p>The standard rule of thumb says that if you plan to stay in a home for five to seven years, buying beats renting. That rule depends on a specific set of conditions. When those conditions change, the math changes with it. Three variables do most of the work: the interest rate, the costs that never build equity, and the appreciation assumption.</p>
+
+    <p><a href="#calculator" class="skip-link">Skip to the calculator &rarr;</a></p>
+
+    <h3>Interest Rates Reshape the Math</h3>
+    <p>At a 3% mortgage rate, ownership is forgiving. At 7%, it is a different calculation entirely. The monthly payment rises, and the composition of that payment shifts. Early in a 30-year mortgage at 7%, the majority of each payment goes to interest rather than principal. Five years in, most of what has been paid is interest expense, money that does not return as equity.</p>
+    <p>The amortization curve compounds this effect. In a high-rate environment, the absolute dollars paid in interest during the first decade of a mortgage are significant. On a $500,000 loan at 7%, over $300,000 in interest is paid in the first decade alone. That money functions, financially, the same way rent does. It is gone.</p>
+
+    <h3>Non-Equity Costs Are Pure Expense</h3>
+    <p>A mortgage payment is only part of the cost of ownership. HOA dues, property taxes, homeowners insurance, ongoing maintenance, closing costs, and PMI (private mortgage insurance, which lenders charge when the down payment is under 20%) all flow out without building equity. None of these costs are recoverable. Structurally, they behave like rent.</p>
+    <p>Two line items can flip the math on their own. A $400 monthly HOA fee on a condo totals $48,000 over ten years before any other expense is counted. PMI runs until the loan crosses the 20% equity threshold, and during that window it is pure cost. In condo-heavy or HOA-heavy markets, these expenses can make renting the better financial outcome even before appreciation enters the picture.</p>
+    <p>Tax treatment can shift the equation for some households. Mortgage interest and property taxes are deductible for itemizers, which after the 2017 SALT cap mostly means high earners in high-tax states. For everyone else taking the standard deduction, the tax benefit of ownership is effectively zero, and the calculation runs on the pre-tax numbers above.</p>
+
+    <h3>Appreciation, Leverage, and the Real Driver of Returns</h3>
+    <p>Decomposing the gains from owning shows that principal paydown contributes relatively little in the first decade. Most of the wealth-building attributed to ownership comes from the assumption that the property appreciates, and from the fact that the buyer is leveraged. A homeowner who puts 20% down earns appreciation on the full value of the home, not just on the cash invested. At 3% appreciation, a $500,000 home gains $15,000 in year one against a $100,000 down payment. That is a 15% return on equity before any other factor, which is why ownership can pull ahead even when broad investment returns exceed home appreciation in absolute terms.</p>
+    <p>A 4% annual appreciation assumption produces very different results than a 2% assumption, and the case for buying is highly sensitive to that input. Consider a $500,000 home with a 7% mortgage, a $400 HOA, property tax near 1.5%, modest maintenance, and 2% annual appreciation. Against renting an equivalent unit and investing the monthly cost difference in broad index funds at a long-run 7% return, renting can come out ahead at the ten-year mark. Push appreciation back to 4% and ownership regains the lead. The outcome depends on assumptions that often go untested.</p>
+    <p>Local market history matters here. Markets that appreciate steadily over decades reward owners. Markets that go flat for stretches, as Japan has since 1990 and parts of the industrial Midwest did through the 2000s, often reward renters.</p>
+
+    <h3>The Renter Has to Invest the Difference</h3>
+    <p>The renting-wins scenario carries one condition. The monthly cost difference between renting and owning has to be invested. If a renter spends that difference on lifestyle rather than directing it into index funds or retirement accounts, the financial outcome is worse than either alternative. No equity accumulates, and no portfolio compounds.</p>
+    <p>Ownership functions as a forced savings plan, and that discipline is one of its structural advantages. For renting to win on the numbers, the savings have to land somewhere productive and stay there long enough to compound. The standard five-to-seven year break-even rule generally assumes the renter does not invest the difference. When the renter does, the break-even point pushes out, sometimes by several years.</p>
+
+    <h3>Which Side of the Line</h3>
+    <p>The decision is not about whether buying is generally better. It is about which assumptions apply to a specific home, market, rate, and household. A 7% rate, a $400 HOA, 2% appreciation, and a disciplined renter produce a scenario where renting frequently wins on a ten-year horizon. A 4% rate, low HOA, 4% appreciation, and a renter who does not invest produce the opposite. Both outcomes are mechanically driven by the same inputs. Running the numbers with realistic local inputs is the only way to know which side of the line a given decision falls on.</p>
+
+    <a href="#calculator" class="skip-link bottom">Run your own scenario &rarr;</a>
+  </article>
+</div><!-- /#logic-tab -->
+
 <div class="footer">
   <strong>Disclaimer:</strong> This calculator is for educational and informational purposes only. It is not financial, legal, tax, or investment advice. Real-world outcomes depend on many factors not captured here, including but not limited to: closing costs, selling costs, mortgage interest tax deductions, your personal tax situation, local market conditions, maintenance variability, and changes to any of the assumed rates over time. Past appreciation and investment returns do not guarantee future results. Always consult a qualified financial advisor, tax professional, and real estate professional before making major financial decisions.
   <div class="attribution">Open source · <a href="https://github.com/" target="_blank" rel="noopener">View source on GitHub</a></div>
 </div>
 
+
+<script>
+// === Fetch live mortgage rate from rate.json (updated weekly by GitHub Action) ===
+(function () {
+  fetch('./rate.json', { cache: 'no-cache' })
+    .then(function (r) { return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function (data) {
+      if (typeof data.rate !== 'number') return;
+      var slider = document.getElementById('mortgageRate');
+      var input = document.getElementById('mortgageRate_num');
+      var label = document.getElementById('mortgageRate_live');
+
+      // Round to 2 decimals to match the input step
+      var rate = Math.round(data.rate * 100) / 100;
+      if (slider) slider.value = rate;
+      if (input) input.value = rate;
+
+      // Also update the DEFAULTS object so the Reset button uses the live rate
+      if (typeof DEFAULTS === 'object' && DEFAULTS) {
+        DEFAULTS.mortgageRate = rate;
+      }
+
+      // Update the small green label under the field
+      if (label) {
+        var displayDate = data.date || '';
+        try {
+          var d = new Date(data.date + 'T00:00:00');
+          if (!isNaN(d.getTime())) {
+            displayDate = d.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+          }
+        } catch (e) { /* fall back to raw date string */ }
+        label.textContent = 'Current avg: ' + rate.toFixed(2) + '% — Freddie Mac, ' + displayDate;
+        label.style.display = 'block';
+      }
+
+      // Re-render the chart with the new default
+      if (typeof render === 'function') render();
+    })
+    .catch(function () { /* silent fallback to hardcoded default */ });
+})();
+</script>
+
+<script>
+// === Tab switching with URL hash routing ===
+(function () {
+  var tabs = document.querySelectorAll('.tab-btn');
+  var panels = document.querySelectorAll('.tab-panel');
+
+  function setTab(name, updateHash) {
+    if (name !== 'logic' && name !== 'calculator') name = 'calculator';
+    tabs.forEach(function (t) {
+      var on = t.dataset.tab === name;
+      t.classList.toggle('active', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+    panels.forEach(function (p) {
+      p.classList.toggle('active', p.id === name + '-tab');
+    });
+    if (updateHash) {
+      var newHash = name === 'logic' ? '#logic' : '';
+      history.replaceState(null, '', window.location.pathname + window.location.search + newHash);
+    }
+    // Re-fit the chart when calculator becomes visible (it may have been hidden at init)
+    if (name === 'calculator' && typeof render === 'function') {
+      setTimeout(render, 0);
+    }
+    window.scrollTo(0, 0);
+  }
+
+  tabs.forEach(function (t) {
+    t.addEventListener('click', function () { setTab(t.dataset.tab, true); });
+  });
+
+  // In-article anchor links to #calculator should switch tabs (not just jump)
+  document.querySelectorAll('#logic-tab a[href="#calculator"]').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      setTab('calculator', true);
+    });
+  });
+
+  // Initial state from URL hash
+  var initial = (window.location.hash || '').replace('#', '').toLowerCase();
+  if (initial === 'logic' || initial === 'article') {
+    setTab('logic', false);
+  }
+
+  // React to hash changes (back/forward, manual edits, external links)
+  window.addEventListener('hashchange', function () {
+    var h = (window.location.hash || '').replace('#', '').toLowerCase();
+    setTab(h === 'logic' || h === 'article' ? 'logic' : 'calculator', false);
+  });
+})();
+</script>
 
 <!-- Cloudflare Web Analytics -->
 <script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "6a60772a0b49473a9d81cd4f95e4d76b"}'></script>
