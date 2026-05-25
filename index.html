@@ -75,6 +75,38 @@
     .chart-wrap { order: 2; }
     .summary { order: 3; }
     .breakdown { order: 4; }
+    /* === Width / overflow guards for mobile === */
+    html, body {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
+    body, .container > div:not(.panel), .panel, .summary, .breakdown, .chart-wrap, .verdict, .intro, .assumptions, .footer {
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+    /* Stack the summary cards and breakdown columns at the same breakpoint as the reorder */
+    .summary {
+      grid-template-columns: 1fr !important;
+    }
+    .breakdown-grid {
+      grid-template-columns: 1fr !important;
+    }
+    /* Keep the canvas inside its container */
+    canvas {
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+    }
+    /* Long breakdown rows should wrap rather than push the page wider */
+    .breakdown-col .row {
+      flex-wrap: wrap;
+      column-gap: 12px;
+      row-gap: 2px;
+    }
+    .breakdown-col .row .v {
+      margin-left: auto;
+    }
   }
   @media (max-width: 720px) {
     body { padding: 14px; }
