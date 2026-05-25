@@ -1,0 +1,71 @@
+name: Update mortgage rate
+
+# Runs every Thursday at 18:00 UTC (~2pm ET / 1pm CT) — Freddie Mac PMMS
+# is released Thursdays at noon ET, so 2pm ET gives the feed time to settle.
+# Also supports manual triggering from the Actions tab.
+on:
+  schedule:
+    - cron: '0 18 * * 4'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Fetch latest rate from FRED
+        run: |
+          # FRED's fredgraph.csv endpoint requires no API key
+          curl -fsSL \
+            -o /tmp/rate.csv \
+            "https://fred.stlouisfed.org/graph/fredgraph.csv?id=MORTGAGE30US"
+
+          python3 <<'EOF'
+          import csv, json
+          from datetime import datetime, timezone
+
+          # Read CSV — first row is header, last non-empty row is most recent
+          with open('/tmp/rate.csv') as f:
+              rows = list(csv.reader(f))
+
+          # Skip header, drop missing values (FRED uses '.' for missing)
+          data_rows = [r for r in rows[1:] if r and r[1] not in ('.', '')]
+          if not data_rows:
+              raise SystemExit('No valid rate data returned from FRED')
+
+          latest_date, latest_value = data_rows[-1]
+          rate = float(latest_value)
+
+          out = {
+              "rate": rate,
+              "date": latest_date,
+              "source": "Freddie Mac PMMS via FRED (MORTGAGE30US)",
+              "source_url": "https://fred.stlouisfed.org/series/MORTGAGE30US",
+              "fetched_at": datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+          }
+
+          with open('rate.json', 'w') as f:
+              json.dump(out, f, indent=2)
+              f.write('\n')
+
+          print(f'Wrote rate: {rate}% (as of {latest_date})')
+          EOF
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add rate.json
+          if git diff --staged --quiet; then
+            echo "No rate change to commit."
+          else
+            # Build commit message from the new rate
+            RATE=$(python3 -c "import json; d=json.load(open('rate.json')); print(f\"{d['rate']}% as of {d['date']}\")")
+            git commit -m "Update mortgage rate: $RATE"
+            git push
+          fi
