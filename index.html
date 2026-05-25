@@ -49,7 +49,32 @@
     margin: 0 auto;
   }
   @media (max-width: 1000px) {
-    .container { grid-template-columns: 1fr; }
+    /* Stack the layout, then reorder for mobile-first reading:
+       Title → Subtitle → Results (verdict+chart first) → Inputs → How-it-works → Disclaimer */
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+    .container {
+      display: contents;
+    }
+    h1 { order: 1; }
+    .subtitle { order: 2; }
+    /* The "results" div is the unnamed sibling of .panel inside .container */
+    .container > div:not(.panel) {
+      order: 10;
+      display: flex;
+      flex-direction: column;
+    }
+    .panel { order: 20; }
+    .intro { order: 30; }
+    .assumptions { order: 35; }
+    .footer { order: 40; }
+    /* Inside the results section, surface verdict + chart at the top */
+    .verdict { order: 1; }
+    .chart-wrap { order: 2; }
+    .summary { order: 3; }
+    .breakdown { order: 4; }
   }
   @media (max-width: 720px) {
     body { padding: 14px; }
@@ -355,6 +380,17 @@
     font-size: 11px;
   }
   .footer .attribution a { color: #92400e; }
+  .assumptions {
+    margin-top: 16px;
+    padding: 16px 22px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 1.55;
+    color: #4b5563;
+  }
+  .assumptions strong { color: #1f2937; }
 </style>
 </head>
 <body>
@@ -618,9 +654,6 @@
           <div class="row"><span>Last month's rent</span><span class="v" id="r_lastrent">$0</span></div>
           <div class="row total"><span>Total net worth</span><span class="v" id="r_total">$0</span></div>
         </div>
-      </div>
-      <div class="note">
-        <strong>Assumptions:</strong> Both scenarios assume the same monthly housing budget &mdash; whichever party pays less each month invests the difference at the investment return rate. Property tax and maintenance scale with home value. Insurance and HOA grow with inflation. Rent grows at the rent growth rate. Mortgage is a fixed-rate fully amortizing loan. <strong>PMI</strong> applies only when the initial down payment is below 20%, is charged monthly as the annual PMI rate &times; current loan balance &divide; 12, and automatically drops off the month the loan balance reaches 80% of the original home price. The buyer's net worth at any year = home value &minus; loan balance + investment account. Selling costs, closing costs, and tax deductions are not modeled.
       </div>
     </div>
   </div>
@@ -1002,6 +1035,10 @@ document.getElementById('resetBtn').addEventListener('click', () => {
 
 render();
 </script>
+
+<div class="assumptions">
+  <strong>Assumptions used by this calculator:</strong> Both scenarios assume the same monthly housing budget &mdash; whichever party pays less each month invests the difference at the investment return rate. Property tax and maintenance scale with home value. Insurance and HOA grow with inflation. Rent grows at the rent growth rate. Mortgage is a fixed-rate fully amortizing loan. <strong>PMI</strong> applies only when the initial down payment is below 20%, is charged monthly as the annual PMI rate &times; current loan balance &divide; 12, and automatically drops off the month the loan balance reaches 80% of the original home price. The buyer's net worth at any year = home value &minus; loan balance + investment account. Selling costs, closing costs, and tax deductions are not modeled.
+</div>
 
 <div class="footer">
   <strong>Disclaimer:</strong> This calculator is for educational and informational purposes only. It is not financial, legal, tax, or investment advice. Real-world outcomes depend on many factors not captured here, including but not limited to: closing costs, selling costs, mortgage interest tax deductions, your personal tax situation, local market conditions, maintenance variability, and changes to any of the assumed rates over time. Past appreciation and investment returns do not guarantee future results. Always consult a qualified financial advisor, tax professional, and real estate professional before making major financial decisions.
