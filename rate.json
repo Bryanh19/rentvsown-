@@ -1,7 +1,7 @@
 {
-  "rate": 6.51,
-  "date": "2026-05-21",
-  "source": "Freddie Mac PMMS (30-year Fixed-Rate Mortgage)",
-  "source_url": "https://www.freddiemac.com/pmms",
-  "fetched_at": "2026-05-25T00:00:00Z"
+  "rate": 6.53,
+  "date": "2026-05-28",
+  "source": "Freddie Mac PMMS via FRED (MORTGAGE30US)",
+  "source_url": "https://fred.stlouisfed.org/series/MORTGAGE30US",
+  "fetched_at": "2026-05-28T20:04:28Z"
 }
