@@ -1,7 +1,7 @@
 {
-  "rate": 6.58,
-  "date": "2026-07-23",
+  "rate": 6.69,
+  "date": "2026-08-06",
   "source": "Freddie Mac PMMS via FRED (MORTGAGE30US)",
   "source_url": "https://fred.stlouisfed.org/series/MORTGAGE30US",
-  "fetched_at": "2026-07-23T18:57:15Z"
+  "fetched_at": "2026-08-06T23:47:44Z"
 }
